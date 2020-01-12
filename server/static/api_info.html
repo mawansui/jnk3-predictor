@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>JNK3 Predictor API</title>
+  </head>
+  <body>
+    
+   <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand">Predictor</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Predictor <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/about">About the project</a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/api_info">API</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/tutorial">How to use</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+  
+<div class="container" style="padding: 1%">
+  <h1>Predictor API</h1>
+  <p style="margin-top: 2%; font-size: 20px;">Everything you see on this project's website is calculated on a remote server. It has a REST API, which you can use in your own projects if you'd like.</p>
+  <h4>How it's done:</h4>
+  <p style="margin-top: 2%; font-size: 20px;">To do it, simply send a POST request to <code>http://&lt;site_ip&gt;:8000/predict</code> with a parameter called <code>list_of_smiles</code>, which should contain a string of SMILES separated by commas (and no spaces!).</p>
+  <h4>Example in Python:</h4>
+  <p style="margin-top: 2%; font-size: 20px;"><code>import requests<br>
+  url = 'http://&lt;site_ip&gt;:8000/predict'<br>
+  r = requests.post(url, params={"list_of_smiles": "CC(=O)OC1=CC=CC=C1C(=O)O,C1=CC=CC=C1"})<br>r.json()</code></p>
+  <h4>Example in JavaScript:</h4>
+  <p style="margin-top: 2%; font-size: 20px;"><code>async function getPredictions() {<br><br>
+    let response = await fetch('http://&lt;site_ip&gt;:8000/predict?list_of_smiles='+<br>
+          encodeURIComponent("CC(=O)OC1=CC=CC=C1C(=O)O,C1=CC=CC=C1"), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });<br><br>
+
+        let result = await response.json();<br>}</code></p>
+  <p style="margin-top: 2%; font-size: 20px;">The API returns a JSON of a following format:
+    <br><code>{<br>
+          "rdkit_366_random_logreg": "1, ..., n",<br>
+          "rdkit_366_random_rf": "1, ..., n",<br>
+          "mordred_366_random_logreg": "1, ..., n",<br>
+          "mordred_366_random_rf": "1, ..., n",<br>
+          "rdkit_autoencoder_logreg": "1, ..., n",<br>
+          "rdkit_autoencoder_rf": "1, ..., n",<br>
+          "mordred_autoencoder_logreg": "1, ..., n",<br>
+          "mordred_autoencoder_rf": "1, ..., n"
+        <br>}</code></p>
+    <p style="margin-top: 2%; font-size: 20px;">The key represents the descriptors (<code>rdkit</code> or <code>mordred</code>), the data set (<code>366_random</code> or <code>autoencoder</code>), and the model (<code>logreg</code> or <code>rf</code>). The value is a string of float numbers (which you have to parse back to float, as well as to split the string by commas <code>,</code> to get an array), where <code>n</code> is the number of molecules' SMILES passed to the <code>/predict</code> method.</p>
+</div>
+
+<footer>
+
+  <!-- Copyright -->
+  <div class="footer-copyright text-center py-3">© 2020 Developed by <a href="https://github.com/mawansui">Maxim Shevelev</a>
+  </div>
+  <!-- Copyright -->
+
+</footer>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>

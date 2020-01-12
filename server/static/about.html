@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+  <head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>About the project</title>
+  </head>
+  <body>
+    
+   <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand">Predictor</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Predictor <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/about">About the project</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/api_info">API</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/tutorial">How to use</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container" style="padding: 1%">
+<div class="row">
+  <div class="col-3">
+    <div style="position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;">
+    <div style="position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+    
+  padding: 0 15px;">
+      <h5>Contents</h5>
+      <div class="list-group">
+        <a href="#intro" id="menu_1" class="list-group-item list-group-item-action active" onclick="setActive(this.id)">Introduction</a>
+        <a href="#source_data" id="menu_2" class="list-group-item list-group-item-action" onclick="setActive(this.id)">Source Data</a>
+        <a href="#dataset_preparation" id="menu_3" class="list-group-item list-group-item-action" onclick="setActive(this.id)">Dataset Preparation</a>
+        <a href="#final_datasets" id="menu_4" class="list-group-item list-group-item-action" onclick="setActive(this.id)">Final Datasets</a>
+        <a href="#training" id="menu_5" class="list-group-item list-group-item-action" onclick="setActive(this.id)">Model Training</a>
+        <a href="#server_creation" id="menu_6" class="list-group-item list-group-item-action" onclick="setActive(this.id)">Server Development</a>
+        <a href="#conclusion" id="menu_7" class="list-group-item list-group-item-action" onclick="setActive(this.id)">Conclusion</a>
+      </div>
+    </div>
+    </div>
+  </div>
+  <div class="col-8">
+    <div class="container">
+        <h3>Developing a web app to predict the probability of a molecule's inhibitory action towards the JNK3 protein</h3>
+        <span style="color: gray"><strong>Authored and developed by: Maxim Shevelev</strong></span>
+        
+        <a id="intro"><h4 style="margin-top: 2%">Introduction</h4></a>
+          <p style="margin-top: 2%">JNK3 (c-Jun N-terminal kinase 3), also known as MAPK10, is an important protein, which regulates several cellular processes in human bodies <sup>[1]</sup>. It is especially known to play a significant role in the process of neuronal apoptosis, which is a process of neurons destruction that causes the Parkinson's Desease (PD).<sup>[2]</sup> Thus, searching for JNK3 inhibitors may be essential in preventing PD in humans. There is <a href="https://pubchem.ncbi.nlm.nih.gov/bioassay/746#section=Description">readily-available published data</a> on the results of a high-throughtput screening (HTS), performed by the Scripps Research Institute Molecular Screening Center. So it seemed promising to use it to train several machine learning classifiers in ordred to make a web application that would predict the probability of a molecule being a JNK3 inhibitor, which may later be used to search for new drugs agains PD.</p>
+
+        <a id="source_data"><h4 style="margin-top: 2%">Source Data</h4></a>
+          <p style="margin-top: 2%">The HTS data for JNK3 inhibitors is <a href="https://pubchem.ncbi.nlm.nih.gov/bioassay/746#section=Description">readily available</a> at PubChem BioAssay Database. It consists of two <code>.sdf</code> files, listing active and inactive compounds, respectively. Overall, the study found <code>366</code> active and <code>59422</code> inactive compounds. For my studies, I represented each active and inactive molecule by two-dimensional (2D) molecular descriptors, calculated by the RDKit <sup>[3]</sup> and Mordred <sup>[4]</sup> python packages. Thus, each individual molecule was separately represented by 200 features (2D RDKit descriptors) and 1599 features (all 2D descriptors from the Mordred package except from the ones related to the calculation of a detour matrix, due to technical reasons).</p>
+
+        <a id="dataset_preparation"><h4 style="margin-top: 2%">Dataset Preparation</h4></a>
+          <p style="margin-top: 2%">The source data is obviously unbalanced, which makes it unsuitable to be used to train some, if not all, machine learning algorithms. Consequently, it was necessary to create a balanced dataset from the initial data. I came up with two approaches to solve this problem. <strong>The first</strong> was to select all active and 366 random inactive compounds. The disadvantage of this approach is that the randomly selected inactive molecules may have a similar structure to the active ones, which will make it hard for selected machine learning algorithms to find patterns that help distinguish one class from another. <strong>The second</strong> approach was to first train an autoencoder neural network <sup>[5]</sup> which would learn the data distribution of active molecules, and then use it to rank all inactive molecules by their "dissimilarity" to active molecules, hence selecting 366 most dissimilar compounds.</p>
+
+        <a id="final_datasets"><h4 style="margin-top: 2%">Final Datasets</h4></a>
+          <p style="margin-top: 2%">Thus, the source data was used to form two datasets. The first one contained 366 randomly selected inactive molecules. The second one contained 366 inactive molecules, selected by using a dissimilarity-ranking autoencoder. Molecules included in each dataset were separately represented by RDKit and Mordred descriptors.<br>
+            <ul>
+              <li>Source Data</li>
+               <ul>
+                <li><strong style="color: #E74C3C">Dataset 1</strong>: All active, <strong>randomly</strong> selected 366 inactive molecules</li>
+                 <ul>
+                  <li>Dataset 1 (all molecules represented by RDKit descriptors)</li>
+                  <li>Dataset 1 (all molecules represented by Mordred descriptors)</li>
+                 </ul>
+                <li><strong style="color: #3498DB">Dataset 2</strong>: All active, <strong>autoencoder</strong>-selected 366 inactive molecules</li>
+                 <ul>
+                  <li>Dataset 2 (all molecules represented by RDKit descriptors)</li>
+                  <li>Dataset 2 (all molecules represented by Mordred descriptors)</li>
+                 </ul>
+               </ul>
+            </ul></p>
+
+          <a id="training"><h4 style="margin-top: 2%">Model Training</h4></a>
+          <p style="margin-top: 2%">To work with the resulting 4 datasets (<strong style="color: #E74C3C">Dataset 1</strong> [RDKit], <strong style="color: #E74C3C">Dataset 1</strong> [Mordred], <strong style="color: #3498DB">Dataset 2</strong> [RDkit], <strong style="color: #3498DB">Dataset 2</strong> [Mordred]), it was decided to use four machine learning methods: <code>Logistic Regression (LR)</code>, <code>Random Forest (RF)</code>, <code>Support Vector Machine Classifier (SVM)</code>, and <code>Artifical Neural Network (ANN)</code>. During training, the implementations of the first three methods were taken from the <code>scikit-learn</code> <sup>[6]</sup> python package, as well as the functions for data preprocessing and metrics calculation. All neural networks used in this project were created and trained using <code>tensorflow 2.0</code>. The training itself was conducted following a three-sample procedure: that is, each of the four datasets was divided into three non-overlapping parts. The first one was the <code>training set</code>. It was used to train a given method model with given hyperparameters set. The second one was the <code>internal test set</code>. It was used to compare models of the same method with different hyperparameters, to select which one had the best performance. The third one, the <code>external test set</code>, was used to assess the best model's predictive performance on "real", unseen data.<br><br>The compounds were selected into these three sets according to the following table:<br>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Data set</th>
+                <th scope="col" style="text-align: center;">Active molecules</th>
+                <th scope="col" style="text-align: center;">Inactive molecules</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Train set</td>
+                <td style="text-align: center;">297</td>
+                <td style="text-align: center;">297</td>
+              </tr>
+              <tr>
+                <td>Internal test set</td>
+                <td style="text-align: center;">33</td>
+                <td style="text-align: center;">33</td>
+              </tr>
+              <tr>
+                <td>External test set</td>
+                <td style="text-align: center;">36</td>
+                <td style="text-align: center;">36</td>
+              </tr>
+            </tbody>
+          </table>
+
+          The models were compared using the <code>precision</code>, <code>recall</code>, and <code>f-beta</code> metrics, as well as the <code>ROC AUC</code> metric, where applicable. During training, it was soon established that the SVM and ANN methods are unsuitable to work with such a small dataset, as all of their metrics' values were on the level of <code>0.5</code>. The <code>Logistic Regression</code> and <code>Random Forest</code> models seemed to have a reasonable performance.<br><br>
+
+          <span><code>Logistic Regression</code></span><br><br>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Data set</th>
+                <th scope="col" style="text-align: center;">Internal precision</th>
+                <th scope="col" style="text-align: center;">External precision</th>
+                <th scope="col" style="text-align: center;">ROC AUC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Dataset 1 [RDKit]</td>
+                <td style="text-align: center;">0.76</td>
+                <td style="text-align: center;">0.76</td>
+                <td style="text-align: center;">0.71</td>
+              </tr>
+              <tr>
+                <td>Dataset 1 [Mordred]</td>
+                <td style="text-align: center;">0.74</td>
+                <td style="text-align: center;">0.75</td>
+                <td style="text-align: center;">0.74</td>
+              </tr>
+              <tr>
+                <td>Dataset 2 [RDKit]</td>
+                <td style="text-align: center;">0.98</td>
+                <td style="text-align: center;">0.96</td>
+                <td style="text-align: center;">0.98</td>
+              </tr>
+              <tr>
+                <td>Dataset 2 [Mordred]</td>
+                <td style="text-align: center;">0.97</td>
+                <td style="text-align: center;">0.97</td>
+                <td style="text-align: center;">0.97</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <span><code>Random Forest</code></span><br><br>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Data set</th>
+                <th scope="col" style="text-align: center;">Internal precision</th>
+                <th scope="col" style="text-align: center;">External precision</th>
+                <th scope="col" style="text-align: center;">ROC AUC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Dataset 1 [RDKit]</td>
+                <td style="text-align: center;">0.74</td>
+                <td style="text-align: center;">0.72</td>
+                <td style="text-align: center;">0.74</td>
+              </tr>
+              <tr>
+                <td>Dataset 1 [Mordred]</td>
+                <td style="text-align: center;">0.77</td>
+                <td style="text-align: center;">0.77</td>
+                <td style="text-align: center;">0.77</td>
+              </tr>
+              <tr>
+                <td>Dataset 2 [RDKit]</td>
+                <td style="text-align: center;">0.98</td>
+                <td style="text-align: center;">1.00</td>
+                <td style="text-align: center;">0.98</td>
+              </tr>
+              <tr>
+                <td>Dataset 2 [Mordred]</td>
+                <td style="text-align: center;">0.97</td>
+                <td style="text-align: center;">0.96</td>
+                <td style="text-align: center;">0.97</td>
+              </tr>
+            </tbody>
+          </table>
+
+
+        </p>
+
+        <a id="server_creation"><h4 style="margin-top: 2%">Server Development</h4></a>
+          <p style="margin-top: 2%">After training and validating the models, it was decided to publish them on a server, that would have a REST API and a GUI in the form of a web app. The API and the HTML GUI were developed using a <code>fastAPI</code> <sup>[7]</sup> python ASGI-framework. The app uses a <code>JSME Chemical Editor</code> <sup>[8]</sup>. The project is published on a manually set up scalable Google Cloud Platform Linux server. All of the source codes for the project's machine learning / server parts can be <a href="https://github.com/mawansui/jnk3-predictor">found at GitHub</a>.</p>
+
+        <a id="conclusion"><h4 style="margin-top: 2%">Conclusion</h4></a>
+          <p style="margin-top: 2%">This work serves more as a proof-of-concept, as well as a chemoinformatics project that showcases my current skills. I see how there is a lot of place for improvements in several parts of the work, especially when optimizing and validating QSAR models. However, it is nice to have an up and running web server that is capable of inferring at least something relevant to the drawn molecule. With a bit of learning and practice, it may be possible to considerably improve the quality and stability of the models, and simply update the existing server, rather that begin the work from the start.<br><br> <strong>A warm thank you</strong> for your kind attention to my project, and this page in particular! Since you've read this far, you might as well drop me a line at <code>mdshev7 [at] gmail.com</code> to have a little chat :P But seriously, though, if you have any questions regarding the project, feel free to contact me anytime. Have a nice day! Cheers. </p>
+
+    
+    
+    <a id="references"><h4>References</h4></a>
+          <p style="margin-top: 2%"><sup>[1]</sup> https://en.wikipedia.org/wiki/MAPK10</p>
+          <p style="margin-top: 2%"><sup>[2]</sup> Willesen, MG. et al. (2002) Ann N Y Acad Sci 973, 237-240.</p>
+          <p style="margin-top: 2%"><sup>[3]</sup> https://www.rdkit.org</p>
+          <p style="margin-top: 2%"><sup>[4]</sup> Moriwaki, H., Tian, Y., Kawashita, N. et al. Mordred: a molecular descriptor calculator. J Cheminform 10, 4 (2018) doi:10.1186/s13321-018-0258-y</p>
+          <p style="margin-top: 2%"><sup>[5]</sup> https://en.wikipedia.org/wiki/Autoencoder</p>
+          <p style="margin-top: 2%"><sup>[6]</sup> https://scikit-learn.org/stable/</p>
+          <p style="margin-top: 2%"><sup>[7]</sup> https://fastapi.tiangolo.com</p>
+          <p style="margin-top: 2%"><sup>[8]</sup> https://peter-ertl.com/jsme/</p>
+
+
+    </div>
+  </div>
+</div>
+</div>
+
+<footer>
+
+  <!-- Copyright -->
+  <div class="footer-copyright text-center py-3">© 2020 Developed by <a href="https://github.com/mawansui">Maxim Shevelev</a>
+  </div>
+  <!-- Copyright -->
+
+</footer>
+
+<script type="text/javascript">
+  function setActive(self) {
+    console.log(self)
+
+    switch (self) {
+      // I know this is not the best solution, but I don't use jQuery here 
+      // and don't really care for any optimization whatsoever, so bear with me:)
+      case "menu_1":
+        document.getElementById("menu_1").className = "list-group-item list-group-item-action active";
+        document.getElementById("menu_2").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_3").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_4").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_5").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_6").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_7").className = "list-group-item list-group-item-action";
+        break;
+      case "menu_2":
+        document.getElementById("menu_1").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_2").className = "list-group-item list-group-item-action active";
+        document.getElementById("menu_3").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_4").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_5").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_6").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_7").className = "list-group-item list-group-item-action";
+        break;
+      case "menu_3":
+        document.getElementById("menu_1").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_2").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_3").className = "list-group-item list-group-item-action active";
+        document.getElementById("menu_4").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_5").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_6").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_7").className = "list-group-item list-group-item-action";
+        break;
+      case "menu_4":
+        document.getElementById("menu_1").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_2").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_3").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_4").className = "list-group-item list-group-item-action active";
+        document.getElementById("menu_5").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_6").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_7").className = "list-group-item list-group-item-action";
+        break;
+      case "menu_5":
+        document.getElementById("menu_1").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_2").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_3").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_4").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_5").className = "list-group-item list-group-item-action active";
+        document.getElementById("menu_6").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_7").className = "list-group-item list-group-item-action";
+        break;
+      case "menu_6":
+        document.getElementById("menu_1").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_2").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_3").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_4").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_5").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_6").className = "list-group-item list-group-item-action active";
+        document.getElementById("menu_7").className = "list-group-item list-group-item-action";
+        break;
+      case "menu_7":
+        document.getElementById("menu_1").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_2").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_3").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_4").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_5").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_6").className = "list-group-item list-group-item-action";
+        document.getElementById("menu_7").className = "list-group-item list-group-item-action active";
+        break;
+    }
+
+  }
+</script>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>

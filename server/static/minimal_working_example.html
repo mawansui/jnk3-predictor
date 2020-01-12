@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>Predictor</title>
+</head>
+<body>
+	<h1>Hello World!</h1>
+	<p>Here we will have a text field and a button</p>
+	<textarea rows="4" cols="50" id="smiles_textarea">Input your SMILES here</textarea>
+	<button type="button" id="button_1" onclick='myFunction()'>Click Me!</button>
+	<div id="result"></div>
+	<script>
+
+		// document.getElementById("button_1").addEventListener("click", myFunction);
+
+		async function myFunction() {
+			// alert(document.getElementById('smiles_textarea').value);
+			// document.getElementById("result").innerHTML = "<p>Text of the result!</p>"
+
+			let user = {
+			  list_of_smiles: document.getElementById("smiles_textarea").value
+			};
+
+			let response = await fetch('http://127.0.0.1:8000/predict?list_of_smiles='+
+				encodeURIComponent(document.getElementById("smiles_textarea").value), {
+			  method: 'POST',
+			  headers: {
+			    'Content-Type': 'application/json'
+			  }
+			});
+
+			let result = await response.json();
+			console.log(result["rdkit_366_random_logreg"]);
+			// alert(result["rdkit_366_random_logreg"]);
+			document.getElementById("result").innerHTML = "<p>RDKit random 366 logreg: " + result["rdkit_366_random_logreg"] + "</p>"
+		}
+
+		// тут короче надо сделать такую фигню: в html – пустой div
+		// по нажатию на кнопку – отправить содержимое textarea на predict
+		// распарсить полученный json
+		// имея полученные значения, создать табличку в пустом ранее диве
+  </script>
+</body>
+</html>

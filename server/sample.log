@@ -1,0 +1,8 @@
+DEBUG:root:Inside the /predict
+DEBUG:root:inside try
+DEBUG:root:molecules parsed
+DEBUG:root:rdkit calculated
+DEBUG:root:mordred1
+DEBUG:root:mordred2
+DEBUG:root:mordred calculated
+DEBUG:root:mordred values passed

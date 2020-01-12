@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>JNK3 Predictor Tutorial</title>
+  </head>
+  <body>
+    
+   <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand">Predictor</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Predictor <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/about">About the project</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/api_info">API</a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/tutorial">How to use</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+  
+<div class="container" style="padding: 1%">
+  <h1>How to use this website</h1>
+  <p style="margin-top: 2%; font-size: 20px;">This website is an interface which allows you to predict whether your molecules of interest inhibit <a href="https://en.wikipedia.org/wiki/MAPK10">the JNK3 protein</a> (also known as MAPK10). You can either draw the molecules you are interested in, or paste an extisting list of SMILES strings for compounds of interest. After pressing the "Predict" button, you will see the probability of a given compound inhibiting the JNK3 protein, inferred by the Logistic Regression and Random Forest models, trained on two different datasets, each represented by two different descriptor sets.</p>
+  <h4>Step 1. Input your molecules of interest.</h4>
+  <p style="margin-top: 2%; font-size: 20px;">First, draw one of your molecules in the JSME Editor. Then press the blue "Add molecule" button below. This will add the drawn molecule's SMILES to the SMILES input area below. Instead (or additionally), you can manually edit the SMILES input area, listing the SMILES representations for the molecules you want to check. Please, separate them with commas (<code>,</code>) using <strong>no spaces</strong>. For example,</p>
+  <div class="container" style="text-align: center;">
+    <img src="/img1" />
+  </div>
+  <h4>Step 2. Get the predictions</h4>
+  <p style="margin-top: 2%; font-size: 20px;">After you have inputted your molecules' SMILES, press the green "Predict" button. This will send the SMILES strings from the input area to the server, process the data, and display the results as a table on the right. All in all, the server makes use of 8 machine learning models:</p>
+  <ul style="font-size: 20px;">
+    <li>Dataset 1 <span style="color: gray">(having randomly selected inactive compounds)</span></li>
+      <ul>
+        <li>2D <a href="https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-descriptors">RDKit</a> Descriptors</li>
+          <ul>
+            <li>Logistic Regression</li>
+            <li>Random Forest</li>
+          </ul>
+        <li><a href="https://jcheminf.biomedcentral.com/articles/10.1186/s13321-018-0258-y">Mordred</a></sup> Descriptors</li>
+          <ul>
+            <li>Logistic Regression</li>
+            <li>Random Forest</li>
+          </ul>
+      </ul>
+    <li>Dataset 2 <span style="color: gray;">(having inactive compounds selected using an autoencoder)</span></li>
+      <ul>
+        <li>2D <a href="https://www.rdkit.org/docs/GettingStartedInPython.html#list-of-available-descriptors">RDKit</a> Descriptors</li>
+          <ul>
+            <li>Logistic Regression</li>
+            <li>Random Forest</li>
+          </ul>
+        <li><a href="https://jcheminf.biomedcentral.com/articles/10.1186/s13321-018-0258-y">Mordred</a></sup> Descriptors</li>
+          <ul>
+            <li>Logistic Regression</li>
+            <li>Random Forest</li>
+          </ul>
+      </ul>
+  </ul>
+  <p style="margin-top: 2%; font-size: 20px;">Thus, the table on the right displays the predictions obtained from all of the 8 models for each of the compounds that you inputted. The predictions can be considered a model's opinion on the probability that a given molecule inhibits the JNK3 protein.</p>
+
+  <p style="margin-top: 2%; font-size: 20px;">More info on the methodology of the experiment can be found <a href="/about">here</a>.</p>
+
+  <h4>Step 3. Restart the process</h4>
+
+  <p style="margin-top: 2%; font-size: 20px;">Once you are done analyzing the predictions, you can press the red "Clear all" button to clear the predictions' tables as well as the SMILES input area. The JSME Editor has to be cleared manually by pressing the blank rectangle next to a smiling face on the upper left of the editor window.</p>  
+
+</div>
+
+<footer>
+
+  <!-- Copyright -->
+  <div class="footer-copyright text-center py-3">© 2020 Developed by <a href="https://github.com/mawansui">Maxim Shevelev</a>
+  </div>
+  <!-- Copyright -->
+
+</footer>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>

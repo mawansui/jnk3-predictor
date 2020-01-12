@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>JNK3 Inhibitor Predictor</title>
+  </head>
+  <body>
+
+    <script type="text/javascript" language="javascript" src="https://peter-ertl.com/jsme/JSME_2017-02-26/jsme/jsme.nocache.js"></script>
+
+    <script>
+     //this function will be called after the JavaScriptApplet code has been loaded.
+        function jsmeOnLoad() {
+            document.getElementById("jsme_container").innerHTML = ""
+            jsmeApplet = new JSApplet.JSME("jsme_container", "380px", "340px");
+       }
+    </script>
+    
+   <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand">Predictor</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Predictor <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/about">About the project</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/api_info">API</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/tutorial">How to use</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+  
+<div class="container" style="padding: 1%">
+  <a name="top"></a>
+  <div class='row'>
+    <div class='col-6'>
+      <h3>JNK3 Inhibitor Predictor</h3>
+      <p>Draw a molecule, add it to the query field, and press "Predict" to know whether any of the input molecules inhibit the JNK3 protein. You can also simply type the SMILES of a required molecule into the text area below. For more info, see the <a href="/tutorial">How to use section</a>.</p>
+
+      <div id="jsme_container" style="margin-bottom: 10px"><span style="color:gray">Seems that we can't reach the CDN for JSME. Sorry for that. While we fix it, why don't you use the manual SMILES input below, please?</span></div>
+
+      <button type="button" class="btn btn-primary" style="margin-bottom: 10px" onclick="passSmilesToText()">Add molecule</button>
+      <button type="button" class="btn btn-danger" style="margin-bottom: 10px" onclick="clearSmiles()">Clear all</button>
+
+      <div class="input-group" style="margin-bottom: 10px">
+        <div class="input-group-prepend">
+          <span class="input-group-text">SMILES</span>
+        </div>
+        <textarea class="form-control" rows="10" style="height:100%;" id="smiles_input_area" aria-label="With textarea"></textarea>
+      </div>
+
+      <a href="#top"><button type="button" class="btn btn-success" onclick="getPredictions()" style="margin-bottom: 10px">Predict</button></a>
+
+    </div>
+    <div class='col-6'>
+      <h3>Probability Predictions</h3>
+      <span>How likely a molecule is to inhibit the JNK3 protein on a scale from 0 (doesn't inhibit) to 1 (inhibits)?</span>
+      <div style="text-align: center; margin-top: 10%;">
+        <span center>Models trained on a <a href="/about">randomly sampled dataset</a></span> <!-- add # to href -->
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" rowspan="2" style="vertical-align: middle; text-align: center;">#</th>
+            <th scope="col" rowspan="2"style="vertical-align: middle; text-align: center;">Model</th>
+            <th scope="col" colspan="2" style="vertical-align: middle; text-align: center;">Descriptors</th>
+          </tr>
+          <tr>
+            <th scope="col" style="text-align:center;">RDKit</th>
+            <th scope="col" style="text-align:center;">Mordred</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+
+  <div style="text-align: center; margin-top: 10%;">
+    <span>Models trained on <a href="/about">a dataset sampled via an autoencoder</a></span> <!-- add # to href -->
+  </div>
+  <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" rowspan="2" style="vertical-align: middle; text-align: center;">#</th>
+            <th scope="col" rowspan="2"style="vertical-align: middle; text-align: center;">Model</th>
+            <th scope="col" colspan="2" style="vertical-align: middle; text-align: center;">Descriptors</th>
+          </tr>
+          <tr>
+            <th scope="col" style="text-align:center;">RDKit</th>
+            <th scope="col" style="text-align:center;">Mordred</th>
+          </tr>
+        </thead>
+        <tbody id="tbody_autoenc"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+
+  <!-- Copyright -->
+  <div class="footer-copyright text-center py-3">© 2020 Developed by <a href="https://github.com/mawansui">Maxim Shevelev</a>
+  </div>
+  <!-- Copyright -->
+
+</footer>
+
+    <script type="text/javascript">
+      
+      function clearSmiles() {
+        document.getElementById("smiles_input_area").value = "";
+        document.getElementById("tbody").innerHTML = "";
+        document.getElementById("tbody_autoenc").innerHTML = "";
+      }
+
+    </script>
+
+    <script>
+      function passSmilesToText() {
+        molecule_smiles = jsmeApplet.smiles()
+        if (document.getElementById("smiles_input_area").value) {
+          document.getElementById("smiles_input_area").value = document.getElementById("smiles_input_area").value + "," + molecule_smiles
+        } else {
+          document.getElementById("smiles_input_area").value = document.getElementById("smiles_input_area").value + molecule_smiles
+        }
+      }
+    </script>
+
+    <script type="text/javascript">
+      
+      async function getPredictions() {
+      // alert(document.getElementById('smiles_textarea').value);
+      // document.getElementById("result").innerHTML = "<p>Text of the result!</p>"
+      var tbody = document.getElementById("tbody");
+      var tbody_autoenc = document.getElementById("tbody_autoenc");
+      tbody.innerHTML = "";
+      tbody_autoenc.innerHTML = "";
+
+        let response = await fetch('http://127.0.0.1:8000/predict?list_of_smiles='+
+          encodeURIComponent(document.getElementById("smiles_input_area").value), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        let result = await response.json();
+
+        console.log(result);
+
+        if (result["error_code"]) {
+          alert("Sorry, an error occured while fetching predictions from the server. It seems to be related to your SMILES input. Please check the input SMILES, and try again.");
+        } else {
+
+        parsed_result = {
+          "rdkit_366_random_logreg": result["rdkit_366_random_logreg"].split(","),
+          "rdkit_366_random_rf": result["rdkit_366_random_rf"].split(","),
+          "mordred_366_random_logreg": result["mordred_366_random_logreg"].split(","),
+          "mordred_366_random_rf": result["mordred_366_random_rf"].split(","),
+          "rdkit_autoencoder_logreg": result["rdkit_autoencoder_logreg"].split(","),
+          "rdkit_autoencoder_rf": result["rdkit_autoencoder_rf"].split(","),
+          "mordred_autoencoder_logreg": result["mordred_autoencoder_logreg"].split(","),
+          "mordred_autoencoder_rf": result["mordred_autoencoder_rf"].split(",")
+        }
+
+        console.log(parsed_result);
+
+        array_1 = parsed_result["rdkit_366_random_logreg"]
+        array_2 = parsed_result["rdkit_366_random_rf"]
+        array_3 = parsed_result["mordred_366_random_logreg"]
+        array_4 = parsed_result["mordred_366_random_rf"]
+        array_5 = parsed_result["rdkit_autoencoder_logreg"]
+        array_6 = parsed_result["rdkit_autoencoder_rf"]
+        array_7 = parsed_result["mordred_autoencoder_logreg"]
+        array_8 = parsed_result["mordred_autoencoder_rf"]
+
+        // https://stackoverflow.com/questions/4856717/javascript-equivalent-of-pythons-zip-function
+        function zip() {
+            var args = [].slice.call(arguments);
+            var shortest = args.length==0 ? [] : args.reduce(function(a,b){
+                return a.length<b.length ? a : b
+            });
+
+            return shortest.map(function(_,i){
+                return args.map(function(array){return array[i]})
+            });
+        }
+
+        molecules_result = []
+
+        for (var i = 0; i < array_1.length; i += 1) {
+          mol_d = {"rdkit_366_random_logreg": array_1[i],
+                   "rdkit_366_random_rf": array_2[i],
+                   "mordred_366_random_logreg": array_3[i],
+                   "mordred_366_random_rf": array_4[i],
+                   "rdkit_autoencoder_logreg": array_5[i],
+                   "rdkit_autoencoder_rf": array_6[i],
+                   "mordred_autoencoder_logreg": array_7[i],
+                   "mordred_autoencoder_rf": array_8[i]}
+          molecules_result.push(mol_d)
+        }
+
+        console.log(molecules_result)
+
+
+
+        // console.log(typeof result);
+
+        for (var i = 0; i < molecules_result.length; i++) {
+          var tr = "<tr>";
+
+          var tr_ae = "<tr>";
+
+          tr += "<td rowspan='2' style='text-align: center;'>" + (i+1).toString() + "</td>" + "<td>Logistic Regression</td>" + "<td style='text-align: center;'>" + parseFloat(molecules_result[i].rdkit_366_random_logreg.toString()).toPrecision(2) +"</td>" + "<td style='text-align: center;'>" + parseFloat(molecules_result[i].mordred_366_random_logreg.toString()).toPrecision(2) + "</td></tr>";
+          tr += "<td>Random Forest</td><td style='text-align: center;'>" + parseFloat(molecules_result[i].rdkit_366_random_rf.toString()).toPrecision(2) + "</td><td style='text-align: center;'>" + parseFloat(molecules_result[i].mordred_366_random_rf.toString()).toPrecision(2) + "</td></tr>"
+
+          tr_ae += "<td rowspan='2'>" + (i+1).toString() + "</td>" + "<td>Logistic Regression</td>" + "<td style='text-align: center;'>" + parseFloat(molecules_result[i].rdkit_autoencoder_logreg.toString()).toPrecision(2) +"</td>" + "<td style='text-align: center;'>" + parseFloat(molecules_result[i].mordred_autoencoder_logreg.toString()).toPrecision(2) + "</td></tr>";
+          tr_ae += "<td>Random Forest</td><td style='text-align: center;'>" + parseFloat(molecules_result[i].rdkit_autoencoder_rf.toString()).toPrecision(2) + "</td><td style='text-align: center;'>" + parseFloat(molecules_result[i].mordred_autoencoder_rf.toString()).toPrecision(2) + "</td></tr>"
+
+
+          tbody.innerHTML += tr;
+          tbody_autoenc.innerHTML += tr_ae;
+        }
+      }
+        // alert(result["rdkit_366_random_logreg"]);
+        // document.getElementById("result").innerHTML = "<p>RDKit random 366 logreg: " + result["rdkit_366_random_logreg"] + "</p>"
+    }
+
+    </script>
+
+    <script type="text/javascript">
+      
+      window.onerror = function myErrorHandler(errorMsg, url, lineNumber) {
+          alert("Error occured: " + errorMsg); //or any message
+          return false;
+      }
+
+    </script>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>
